@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct { int pid; int tempo_total_s; int tempo_restante_ms; } Processo;
+typedef struct { int pid; int tempo_exec_ms; } Processo;
 typedef struct { int inicio; int fim; int tamanho; int capacidade; Processo* processos; } Fila;
 
 Fila* criar_fila(int N) {
@@ -54,13 +54,14 @@ int main() {
 
     int N, T;
     scanf("%d", &N);
-    scanf("%d", &T);
+    scanf("%d", &T); // em milissegundos
     
     Processo processos[N];
 
     for (int i = 0; i < N; i++) {
-        scanf("%d %d", &processos[i].pid, &processos[i].tempo_total_s);
-        processos[i].tempo_restante_ms = processos[i].tempo_total_s * 1000;
+        int tempo_em_segundos;
+        scanf("%d %d", &processos[i].pid, &tempo_em_segundos);
+        processos[i].tempo_exec_ms = tempo_em_segundos * 1000;
     }
 
     // **************************************
@@ -68,7 +69,7 @@ int main() {
     // **************************************
 
     Fila* fila_de_processos = criar_fila(N);
-    int tempo_inicial = 0;
+    int relogio = 0;
 
     for (int i = 0; i < N; i++) {
         enfileirar(fila_de_processos, processos[i]);
@@ -76,14 +77,14 @@ int main() {
 
     while(!eh_vazia(fila_de_processos)) {
         Processo* processo_atual = desenfileirar(fila_de_processos);
-        if (processo_atual->tempo_restante_ms > T) {
-            processo_atual->tempo_restante_ms -= T;
-            tempo_inicial += T;
+        if (processo_atual->tempo_exec_ms > T) {
+            processo_atual->tempo_exec_ms -= T;
+            relogio += T;
             enfileirar(fila_de_processos, *processo_atual);
         } else {
-            tempo_inicial += processo_atual->tempo_restante_ms;
-            processo_atual->tempo_restante_ms = 0;
-            printf("%d (%d)\n", processo_atual->pid, tempo_inicial);
+            relogio += processo_atual->tempo_exec_ms;
+            processo_atual->tempo_exec_ms = 0;
+            printf("%d (%d)\n", processo_atual->pid, relogio);
         }
     }
 
